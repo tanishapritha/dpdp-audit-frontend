@@ -1,107 +1,162 @@
 import React, { useState } from 'react';
-import { Shield, Github, Info, User, LogOut, Settings, UserCog } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Shield, Github, User, LogOut, Settings, UserCog, Menu, X } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const Layout = ({ children }) => {
+interface LayoutProps {
+    children: React.ReactNode;
+}
+
+const Layout = ({ children }: LayoutProps) => {
     const { user, logout, hasRole } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
-    const getRoleBadgeClass = (role) => {
-        const classes = {
-            ADMIN: 'bg-red-500/20 text-red-400',
-            ANALYST: 'bg-blue-500/20 text-blue-400',
-            VIEWER: 'bg-green-500/20 text-green-400',
-        };
-        return classes[role] || classes.VIEWER;
+    const navLinks = [
+        { name: 'Dashboard', path: '/' },
+        { name: 'Audit Scan', path: '/upload' },
+    ];
+
+    const getRoleBadgeClass = (role: string) => {
+        switch (role) {
+            case 'ADMIN': return 'status-error';
+            case 'ANALYST': return 'status-warning';
+            default: return 'status-success';
+        }
     };
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <nav className="glass sticky top-0 z-50 px-6 py-4 mx-4 my-4 flex justify-between items-center">
-                <Link to="/" className="flex items-center gap-2 no-underline">
-                    <Shield className="text-accent-primary w-8 h-8" strokeWidth={2.5} />
-                    <span className="text-xl font-bold tracking-tight text-white">PolicyPulse</span>
+        <div className="flex flex-col min-h-screen">
+            {/* Header */}
+            <header className="glass sticky top-4 z-50 mx-4 mt-4 px-6 py-3 flex justify-between items-center bg-card">
+                <Link to="/" className="flex items-center gap-2 group">
+                    <div className="p-2 glass-card border-accent bg-accent-gold-glow">
+                        <Shield className="text-accent-gold w-6 h-6 transform group-hover:scale-110 transition-transform" />
+                    </div>
+                    <span className="text-xl font-bold tracking-tight text-white font-heading">PolicyPulse</span>
                 </Link>
-                <div className="flex items-center gap-6">
-                    <Link to="/" className="text-text-secondary hover:text-white transition-colors no-underline">Home</Link>
-                    <Link to="/upload" className="text-text-secondary hover:text-white transition-colors no-underline">Scan</Link>
+
+                {/* Desktop Nav */}
+                <nav className="hidden md:flex items-center gap-8">
+                    {navLinks.map(link => (
+                        <Link
+                            key={link.path}
+                            to={link.path}
+                            className={`text-sm font-medium transition-colors ${location.pathname === link.path ? 'text-accent-gold' : 'text-secondary hover:text-white'
+                                }`}
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
 
                     {hasRole('ADMIN') && (
-                        <Link to="/admin" className="text-text-secondary hover:text-white transition-colors no-underline flex items-center gap-1">
-                            <UserCog size={18} />
+                        <Link
+                            to="/admin"
+                            className={`text-sm font-medium flex items-center gap-1 transition-colors ${location.pathname === '/admin' ? 'text-accent-gold' : 'text-secondary hover:text-white'
+                                }`}
+                        >
+                            <UserCog size={16} />
                             Admin
                         </Link>
                     )}
 
+                    <div className="w-px h-6 bg-border-dim mx-2" />
+
                     <a
-                        href="https://github.com"
+                        href="https://github.com/tanishapritha/dpdp-audit-frontend"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-text-secondary hover:text-white transition-colors"
+                        className="text-secondary hover:text-white"
                     >
-                        <Github width={20} />
+                        <Github size={20} />
                     </a>
 
                     {user && (
                         <div className="relative">
                             <button
                                 onClick={() => setShowUserMenu(!showUserMenu)}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
+                                className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full glass-card hover:border-accent transition-all"
                             >
-                                <User size={18} className="text-primary" />
-                                <span className="text-white text-sm">{user.full_name}</span>
-                                <span className={`px-2 py-0.5 rounded-full text-xs ${getRoleBadgeClass(user.role)}`}>
-                                    {user.role}
-                                </span>
+                                <span className="text-sm font-medium text-white px-2">{user.full_name}</span>
+                                <div className="w-8 h-8 rounded-full bg-accent-gold flex items-center justify-center text-bg-dark font-bold text-xs">
+                                    {user.full_name.charAt(0)}
+                                </div>
                             </button>
 
                             {showUserMenu && (
-                                <div className="absolute right-0 mt-2 w-64 glass-card p-2">
-                                    <div className="px-3 py-2 border-b border-gray-700 mb-2">
-                                        <p className="text-white font-medium">{user.full_name}</p>
-                                        <p className="text-gray-400 text-sm">{user.email}</p>
+                                <div className="absolute right-0 mt-4 w-64 glass p-4 animate-in fade-in slide-in-from-top-2">
+                                    <div className="pb-3 mb-3 border-b border-dim">
+                                        <p className="text-white font-bold">{user.full_name}</p>
+                                        <p className="text-secondary text-xs">{user.email}</p>
+                                        <div className={`mt-2 inline-block badge ${getRoleBadgeClass(user.role)}`}>
+                                            {user.role}
+                                        </div>
                                     </div>
-                                    <Link
-                                        to="/profile"
-                                        className="flex items-center gap-2 px-3 py-2 text-gray-300 hover:bg-gray-700/50 rounded-lg transition-colors no-underline"
-                                        onClick={() => setShowUserMenu(false)}
-                                    >
-                                        <Settings size={16} />
-                                        Profile Settings
-                                    </Link>
-                                    <button
-                                        onClick={handleLogout}
-                                        className="w-full flex items-center gap-2 px-3 py-2 text-red-400 hover:bg-gray-700/50 rounded-lg transition-colors"
-                                    >
-                                        <LogOut size={16} />
-                                        Logout
-                                    </button>
+                                    <div className="space-y-1">
+                                        <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-secondary hover:text-white hover:bg-white/5 rounded-lg transition-colors">
+                                            <Settings size={16} />
+                                            Settings
+                                        </button>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-error hover:bg-error/10 rounded-lg transition-colors"
+                                        >
+                                            <LogOut size={16} />
+                                            Sign Out
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     )}
-                </div>
-            </nav>
+                </nav>
 
-            <main className="flex-grow container mx-auto px-4 py-8">
+                {/* Mobile Menu Toggle */}
+                <button className="md:hidden text-white" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                    {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </header>
+
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden glass m-4 p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-4">
+                    {navLinks.map(link => (
+                        <Link
+                            key={link.path}
+                            to={link.path}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="text-lg font-medium text-white"
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                    <button onClick={handleLogout} className="text-lg font-medium text-error flex items-center gap-2">
+                        <LogOut size={20} /> Sign Out
+                    </button>
+                </div>
+            )}
+
+            {/* Main Content */}
+            <main className="flex-grow container py-8">
                 {children}
             </main>
 
-            <footer className="glass m-4 p-8 flex flex-col md:flex-row justify-between items-center gap-4 text-text-muted text-sm">
-                <div>© 2025 PolicyPulse Audit Engine</div>
-                <div className="flex gap-6">
-                    <a href="#" className="hover:text-text-secondary">Privacy</a>
-                    <a href="#" className="hover:text-text-secondary">Terms</a>
-                    <a href="#" className="hover:text-text-secondary flex items-center gap-1">
-                        <Info size={14} /> Documentation
-                    </a>
+            {/* Footer */}
+            <footer className="mt-auto border-t border-dim py-8 text-center text-muted text-sm">
+                <div className="container flex flex-col md:flex-row justify-between items-center gap-6">
+                    <p>© 2025 PolicyPulse AI. All regulatory rights observed.</p>
+                    <div className="flex gap-8">
+                        <a href="#" className="hover:text-white transition-colors">Privacy Protocol</a>
+                        <a href="#" className="hover:text-white transition-colors">Audit Methodology</a>
+                        <a href="#" className="hover:text-white transition-colors">API Docs</a>
+                    </div>
                 </div>
             </footer>
         </div>

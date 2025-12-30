@@ -6,128 +6,156 @@ import { motion } from 'framer-motion';
 const Home = () => {
     const navigate = useNavigate();
 
+    const features = [
+        {
+            icon: <Database className="text-accent-gold" />,
+            title: "Policy Ingestion",
+            desc: "Automated OCR and structure preservation for complex privacy documents."
+        },
+        {
+            icon: <Search className="text-accent-gold" />,
+            title: "Intelligent Retrieval",
+            desc: "Hybrid search combining semantic and lexical analysis for evidence extraction."
+        },
+        {
+            icon: <FileText className="text-accent-gold" />,
+            title: "Clause Analysis",
+            desc: "Precise mapping of policy text against DPDP legal requirements."
+        },
+        {
+            icon: <CheckCircle2 className="text-accent-gold" />,
+            title: "Risk Certification",
+            desc: "Deterministic scoring and audit logs with immutable evidence binding."
+        }
+    ];
+
     return (
-        <div className="flex flex-col items-center gap-24 py-16">
+        <div className="flex flex-col gap-24 py-16">
             {/* Hero Section */}
-            <section className="text-center max-w-5xl px-4 flex flex-col items-center gap-8">
+            <section className="text-center max-w-4xl mx-auto px-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: 0.6 }}
                 >
-                    <span className="bg-accent-primary/5 text-accent-primary px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border border-accent-primary/20 mb-8 inline-block">
-                        Digital Personal Data Protection (DPDP) Audit System
-                    </span>
-                    <h1 className="text-5xl md:text-7xl font-black tracking-tightest mb-8 leading-tight text-white">
-                        Enterprise Compliance <br />
-                        <span className="text-accent-primary">Verification Engine</span>
+                    <div className="inline-flex items-center gap-2 bg-accent-gold-glow border border-accent-gold/20 px-4 py-1.5 rounded-full mb-8">
+                        <span className="w-2 h-2 rounded-full bg-accent-gold animate-pulse" />
+                        <span className="text-xs font-bold text-accent-gold uppercase tracking-widest">
+                            DPDP Act 2023 Compliance Engine
+                        </span>
+                    </div>
+
+                    <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+                        Audit Your Privacy <br />
+                        <span className="text-accent-gold">Infrastructure</span>
                     </h1>
-                    <p className="text-text-secondary text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
-                        Automate the auditing of privacy policies against the DPDP Act 2023. Our advanced RAG pipeline
-                        ensures legal precision with immutable evidence extraction and deterministic risk scoring.
+
+                    <p className="text-secondary text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed">
+                        The definitive platform for verifying digital personal data protection compliance.
+                        Upload your policies for automated auditing and risk certification.
                     </p>
-                    <div className="flex gap-6 justify-center">
+
+                    <div className="flex flex-wrap gap-6 justify-center">
                         <button
                             onClick={() => navigate('/upload')}
-                            className="bg-accent-primary hover:bg-accent-primary/90 text-bg-primary px-10 py-4 rounded-lg font-black text-lg flex items-center gap-3 transition-all transform hover:scale-105 active:scale-95 shadow-2xl shadow-accent-primary/20"
+                            className="btn btn-primary px-10 py-4 text-lg gap-3"
                         >
-                            Initialize Audit <ArrowRight size={20} />
+                            Start New Audit <ArrowRight size={20} />
                         </button>
-                        <button className="glass hover:bg-white/5 text-white px-10 py-4 rounded-lg font-bold text-lg transition-all border border-white/10">
-                            Technical Whitepaper
+                        <button className="btn btn-ghost px-10 py-4 text-lg">
+                            System Architecture
                         </button>
                     </div>
                 </motion.div>
             </section>
 
-            {/* Advanced RAG Infrastructure */}
-            <section className="w-full max-w-6xl px-4">
+            {/* Core Capability Grid */}
+            <section className="container">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold mb-4">Advanced RAG Infrastructure</h2>
-                    <p className="text-text-secondary max-w-2xl mx-auto">
-                        Built on a specialized Retrieval-Augmented Generation stack for legal precision and hallucination-free auditing.
+                    <h2 className="text-3xl mb-4">Core Engine Capabilities</h2>
+                    <p className="text-secondary max-w-2xl mx-auto">
+                        Precision engineering designed for regulatory compliance and legal verification.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        {
-                            icon: <Database className="text-accent-primary" />,
-                            title: "LlamaIndex Core",
-                            desc: "Hierarchical indexing and advanced query orchestration for structured legal analysis."
-                        },
-                        {
-                            icon: <Search className="text-accent-primary" />,
-                            title: "Hybrid Retrieval",
-                            desc: "Combines dense vector search with BM25 keyword matching for semantic & lexical precision."
-                        },
-                        {
-                            icon: <FileText className="text-accent-primary" />,
-                            title: "Metadata Post-Filtering",
-                            desc: "Attribute-aware retrieval ensuring evidence is strictly bound to valid policy sections."
-                        },
-                        {
-                            icon: <CheckCircle2 className="text-accent-primary" />,
-                            title: "Faithfulness Verification",
-                            desc: "Triple-check verification gate ensuring zero hallucinations in compliance verdicts."
-                        }
-                    ].map((item, i) => (
+                <div className="grid md:grid-cols-2 lg:grid-cols-4">
+                    {features.map((item, i) => (
                         <motion.div
                             key={i}
-                            whileHover={{ y: -5 }}
-                            className="glass p-8 flex flex-col gap-4 border-b-2 border-b-accent-primary/50"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                            className="glass-card p-8 flex flex-col gap-4"
                         >
-                            <div className="bg-accent-primary/5 w-12 h-12 rounded-lg flex items-center justify-center border border-accent-primary/20">
+                            <div className="w-12 h-12 rounded-lg bg-accent-gold/5 border border-accent-gold/10 flex items-center justify-center">
                                 {item.icon}
                             </div>
-                            <h3 className="text-lg font-bold text-white">{item.title}</h3>
-                            <p className="text-sm text-text-secondary leading-relaxed">{item.desc}</p>
+                            <h3 className="text-lg font-bold">{item.title}</h3>
+                            <p className="text-sm text-secondary leading-relaxed">{item.desc}</p>
                         </motion.div>
                     ))}
                 </div>
             </section>
 
-            {/* DPDP Specific Metrics */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl px-4">
-                {[
-                    {
-                        title: "Phase 1: Ingestion",
-                        metrics: ["OCR-Ready Text Extraction", "Page-level Segmentation", "Structure Preservation"]
-                    },
-                    {
-                        title: "Phase 2: Analysis",
-                        metrics: ["Cross-Encoder Re-ranking", "CoT Reasoning Pathways", "Severity Calculation"]
-                    },
-                    {
-                        title: "Phase 3: Certification",
-                        metrics: ["Immutable Audit Logging", "Evidence Context Binding", "JSON Export Ready"]
-                    }
-                ].map((p, i) => (
-                    <div key={i} className="bg-bg-secondary/50 p-8 rounded-2xl border border-white/5">
-                        <h4 className="font-bold text-accent-primary mb-6 uppercase tracking-widest text-xs">{p.title}</h4>
-                        <ul className="space-y-4">
-                            {p.metrics.map((m, j) => (
-                                <li key={j} className="flex items-center gap-3 text-sm text-text-secondary">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-accent-primary"></div>
-                                    {m}
-                                </li>
-                            ))}
-                        </ul>
+            {/* Verification Steps */}
+            <section className="container">
+                <div className="glass p-12 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-accent-gold/5 blur-[100px] -mr-32 -mt-32" />
+
+                    <div className="flex flex-col lg:flex-row gap-16 items-center">
+                        <div className="lg:w-1/2">
+                            <h2 className="text-3xl mb-6">Deterministic Auditing</h2>
+                            <p className="text-secondary mb-8 leading-relaxed">
+                                Our engine moves beyond probabilistic AI. By utilizing specialized retrieval
+                                gateways and verification logic, every compliance status is backed by
+                                direct policy evidence.
+                            </p>
+
+                            <ul className="space-y-4">
+                                {[
+                                    "Immutable audit trail for every finding",
+                                    "Page-level context for all extracted evidence",
+                                    "Zero-hallucination verification pipeline"
+                                ].map((text, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-sm text-secondary">
+                                        <ShieldCheck size={18} className="text-accent-gold" />
+                                        {text}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="lg:w-1/2 w-full grid grid-cols-2 gap-4">
+                            <div className="glass-card p-6 text-center">
+                                <div className="text-3xl font-bold text-white mb-1">2023</div>
+                                <div className="text-xs text-muted uppercase tracking-wider">DPDP Ready</div>
+                            </div>
+                            <div className="glass-card p-6 text-center">
+                                <div className="text-3xl font-bold text-white mb-1">100%</div>
+                                <div className="text-xs text-muted uppercase tracking-wider">Evidence Based</div>
+                            </div>
+                            <div className="glass-card p-6 text-center">
+                                <div className="text-3xl font-bold text-white mb-1">~3s</div>
+                                <div className="text-xs text-muted uppercase tracking-wider">Process Time</div>
+                            </div>
+                            <div className="glass-card p-6 text-center">
+                                <div className="text-3xl font-bold text-white mb-1">24/7</div>
+                                <div className="text-xs text-muted uppercase tracking-wider">Monitoring</div>
+                            </div>
+                        </div>
                     </div>
-                ))}
+                </div>
             </section>
 
-            {/* Final CTA / Quote */}
-            <section className="max-w-4xl w-full text-center py-20 border-y border-white/5 relative">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
-                <p className="text-2xl font-medium text-text-primary mb-8 leading-relaxed px-4">
-                    "Regulatory compliance is no longer a sampling exercise. It requires deterministic,
-                    AI-driven verification across every clause."
-                </p>
-                <div className="flex flex-col items-center gap-2">
-                    <span className="text-white font-bold text-lg tracking-tight">Legal Compliance Team</span>
-                    <span className="text-text-muted text-sm uppercase tracking-widest">PolicyPulse Enterprise</span>
-                </div>
+            {/* Final CTA */}
+            <section className="text-center py-16 border-t border-dim">
+                <h2 className="text-2xl mb-8">Ready to secure your compliance status?</h2>
+                <button
+                    onClick={() => navigate('/upload')}
+                    className="btn btn-primary px-12 py-4"
+                >
+                    Get Started Now
+                </button>
             </section>
         </div>
     );
