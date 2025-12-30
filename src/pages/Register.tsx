@@ -1,175 +1,124 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Shield, Mail, Lock, User, Loader2, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
-export default function Register() {
-    const navigate = useNavigate();
-    const { register } = useAuth();
-
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        fullName: '',
-    });
+const Register = () => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { register: authRegister } = useAuth();
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         setError('');
 
-        // Validation
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            return;
+        try {
+            await authRegister(); // Mock register
+            navigate('/');
+        } catch (err) {
+            setError('Registration failed. Please contact your system administrator.');
+        } finally {
+            setIsSubmitting(false);
         }
-
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters long');
-            return;
-        }
-
-        setLoading(true);
-
-        const result = await register(
-            formData.email,
-            formData.password,
-            formData.fullName
-        );
-
-        if (result.success) {
-            navigate('/login', {
-                state: { message: 'Registration successful! Please log in.' }
-            });
-        } else {
-            setError(result.error);
-        }
-
-        setLoading(false);
-    };
-
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-dark px-4 py-12">
-            <div className="scanline"></div>
-
-            <div className="glass-card p-8 w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold gradient-text mb-2">Create Account</h1>
-                    <p className="text-gray-400">Join the DPDP Audit Platform</p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && (
-                        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-                            <p className="text-red-400 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    <div>
-                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-2">
-                            Full Name
-                        </label>
-                        <input
-                            type="text"
-                            id="fullName"
-                            name="fullName"
-                            required
-                            value={formData.fullName}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder="John Doe"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                            Email Address
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            required
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder="you@company.com"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            required
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder="••••••••"
-                            minLength={8}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
-                    </div>
-
-                    <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
-                            Confirm Password
-                        </label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            required
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder="••••••••"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="btn-primary w-full"
-                    >
-                        {loading ? (
-                            <span className="flex items-center justify-center">
-                                <div className="loader-small mr-2"></div>
-                                Creating account...
-                            </span>
-                        ) : (
-                            'Create Account'
-                        )}
-                    </button>
-                </form>
-
-                <div className="mt-6 text-center">
-                    <p className="text-gray-400">
-                        Already have an account?{' '}
-                        <Link to="/login" className="text-primary hover:text-primary-light transition-colors">
-                            Sign in
-                        </Link>
-                    </p>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-700">
-                    <p className="text-xs text-gray-500 text-center">
-                        By creating an account, you agree to our Terms of Service
-                    </p>
-                </div>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-dark">
+            <div className="absolute top-10 left-10">
+                <Link to="/" className="flex items-center gap-2 group">
+                    <Shield className="text-accent-gold w-6 h-6" />
+                    <span className="text-xl font-bold text-white font-heading">PolicyPulse</span>
+                </Link>
             </div>
+
+            <motion.div
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="w-full max-w-md"
+            >
+                <div className="glass p-10 space-y-8">
+                    <div className="text-center space-y-2">
+                        <h1 className="text-3xl font-bold tracking-tight">Node Registration</h1>
+                        <p className="text-secondary text-sm">Create an authorized auditor account.</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">Full Name</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent-gold transition-colors" size={18} />
+                                    <input
+                                        type="text"
+                                        required
+                                        className="w-full bg-bg-dark/50 border border-dim rounded-xl py-3.5 pl-12 pr-4 text-white focus:border-accent-gold focus:ring-1 focus:ring-accent-gold/20 outline-none transition-all"
+                                        placeholder="Auditor Name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">Entity Email</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent-gold transition-colors" size={18} />
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full bg-bg-dark/50 border border-dim rounded-xl py-3.5 pl-12 pr-4 text-white focus:border-accent-gold focus:ring-1 focus:ring-accent-gold/20 outline-none transition-all"
+                                        placeholder="name@enterprise.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">Secret Key</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent-gold transition-colors" size={18} />
+                                    <input
+                                        type="password"
+                                        required
+                                        className="w-full bg-bg-dark/50 border border-dim rounded-xl py-3.5 pl-12 pr-4 text-white focus:border-accent-gold focus:ring-1 focus:ring-accent-gold/20 outline-none transition-all"
+                                        placeholder="Min. 8 characters"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="status-error p-3 rounded-lg text-xs font-bold">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            disabled={isSubmitting}
+                            className="btn btn-primary w-full py-4 rounded-xl text-lg font-bold gap-2 mt-4"
+                        >
+                            {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <>Register Authorized Node <CheckCircle size={18} /></>}
+                        </button>
+                    </form>
+
+                    <div className="text-center pt-4">
+                        <p className="text-muted text-sm">
+                            Already authorized? <Link to="/login" className="text-accent-gold font-bold hover:underline">Sign In</Link>
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
         </div>
     );
-}
+};
+
+export default Register;

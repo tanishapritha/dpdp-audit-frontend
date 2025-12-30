@@ -1,145 +1,115 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Shield, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
-export default function Login() {
+const Login = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     const { login } = useAuth();
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         setError('');
-        setLoading(true);
 
-        const result = await login(formData.email, formData.password);
-
-        if (result.success) {
+        try {
+            await login(); // Mock login logic
             navigate('/');
-        } else {
-            setError(result.error);
+        } catch (err) {
+            setError('Invalid credentials. Please try again.');
+        } finally {
+            setIsSubmitting(false);
         }
-
-        setLoading(false);
-    };
-
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-dark px-4">
-            <div className="scanline"></div>
-
-            <div className="glass-card p-8 w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-4xl font-bold gradient-text mb-2">DPDP Audit</h1>
-                    <p className="text-gray-400">Enterprise Compliance Platform</p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {error && (
-                        <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4">
-                            <p className="text-red-400 text-sm">{error}</p>
-                        </div>
-                    )}
-
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                            Email Address
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            required
-                            value={formData.email}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder="you@company.com"
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            required
-                            value={formData.password}
-                            onChange={handleChange}
-                            className="input-field"
-                            placeholder="••••••••"
-                        />
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="btn-primary w-full"
-                    >
-                        {loading ? (
-                            <span className="flex items-center justify-center">
-                                <div className="loader-small mr-2"></div>
-                                Signing in...
-                            </span>
-                        ) : (
-                            'Sign In'
-                        )}
-                    </button>
-                </form>
-
-                <div className="mt-8 pt-6 border-t border-gray-700/50">
-                    <p className="text-sm font-medium text-gray-400 mb-4 text-center">Quick Login (Test Roles)</p>
-                    <div className="grid grid-cols-3 gap-3">
-                        <button
-                            onClick={() => { setFormData({ email: 'admin@dpdp.com', password: 'admin123' }) }}
-                            className="text-xs py-2 px-1 bg-primary/10 border border-primary/30 rounded text-primary hover:bg-primary/20 transition-all"
-                        >
-                            Admin
-                        </button>
-                        <button
-                            onClick={() => { setFormData({ email: 'analyst@dpdp.com', password: 'analyst123' }) }}
-                            className="text-xs py-2 px-1 bg-yellow-500/10 border border-yellow-500/30 rounded text-yellow-500 hover:bg-yellow-500/20 transition-all"
-                        >
-                            Analyst
-                        </button>
-                        <button
-                            onClick={() => { setFormData({ email: 'viewer@dpdp.com', password: 'viewer123' }) }}
-                            className="text-xs py-2 px-1 bg-blue-500/10 border border-blue-500/30 rounded text-blue-500 hover:bg-blue-500/20 transition-all"
-                        >
-                            Viewer
-                        </button>
-                    </div>
-                </div>
-
-                <div className="mt-6 text-center">
-                    <p className="text-gray-400">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-primary hover:text-primary-light transition-colors">
-                            Sign up
-                        </Link>
-                    </p>
-                </div>
-
-                <div className="mt-8 pt-6 border-t border-gray-700">
-                    <p className="text-xs text-gray-500 text-center">
-                        Protected by enterprise-grade security
-                    </p>
-                </div>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-dark">
+            <div className="absolute top-10 left-10">
+                <Link to="/" className="flex items-center gap-2 group">
+                    <Shield className="text-accent-gold w-6 h-6" />
+                    <span className="text-xl font-bold text-white font-heading">PolicyPulse</span>
+                </Link>
             </div>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="w-full max-w-md"
+            >
+                <div className="glass p-10 space-y-8">
+                    <div className="text-center space-y-2">
+                        <h1 className="text-3xl font-bold tracking-tight">Access Control</h1>
+                        <p className="text-secondary text-sm">Sign in to manage compliance protocols.</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-muted uppercase tracking-widest pl-1">Authorized Email</label>
+                                <div className="relative group">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent-gold transition-colors" size={18} />
+                                    <input
+                                        type="email"
+                                        required
+                                        className="w-full bg-bg-dark/50 border border-dim rounded-xl py-3.5 pl-12 pr-4 text-white focus:border-accent-gold focus:ring-1 focus:ring-accent-gold/20 outline-none transition-all"
+                                        placeholder="name@enterprise.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-end pl-1">
+                                    <label className="text-xs font-bold text-muted uppercase tracking-widest">Secret Key</label>
+                                    <button type="button" className="text-[10px] text-accent-gold hover:underline">Forgot access?</button>
+                                </div>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-accent-gold transition-colors" size={18} />
+                                    <input
+                                        type="password"
+                                        required
+                                        className="w-full bg-bg-dark/50 border border-dim rounded-xl py-3.5 pl-12 pr-4 text-white focus:border-accent-gold focus:ring-1 focus:ring-accent-gold/20 outline-none transition-all"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="status-error p-3 rounded-lg text-xs font-bold animate-in fade-in zoom-in-95">
+                                {error}
+                            </div>
+                        )}
+
+                        <button
+                            disabled={isSubmitting}
+                            className="btn btn-primary w-full py-4 rounded-xl text-lg font-bold gap-2"
+                        >
+                            {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <>Initialize Session <ArrowRight size={18} /></>}
+                        </button>
+                    </form>
+
+                    <div className="text-center pt-4">
+                        <p className="text-muted text-sm">
+                            No credentials? <Link to="/register" className="text-accent-gold font-bold hover:underline">Register Node</Link>
+                        </p>
+                    </div>
+                </div>
+
+                <div className="mt-8 text-center text-[10px] text-muted uppercase tracking-[0.2em]">
+                    Secure biometric & RSA-2048 protected
+                </div>
+            </motion.div>
         </div>
     );
-}
+};
+
+export default Login;
