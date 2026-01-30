@@ -202,15 +202,15 @@ export default function AuditRoom() {
 
                                 <div className="space-y-3">
                                     {report.requirements?.map((req: any, i: number) => (
-                                        <div key={i} className="p-4 rounded-lg bg-white/5 border border-white/5 hover:border-brand-primary/30 transition-colors group cursor-pointer">
+                                        <div key={i} className="p-4 rounded-sm bg-white/5 border border-white/5 hover:border-brand-primary/30 transition-colors group cursor-pointer">
                                             <div className="flex justify-between items-start mb-2">
                                                 <h4 className="text-sm font-semibold text-slate-200">{req.title || `Requirement ${req.requirement_id}`}</h4>
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${req.status === 'COMPLIANT' ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>{req.status}</span>
+                                                <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider ${req.status === 'COMPLIANT' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>{req.status}</span>
                                             </div>
                                             <p className="text-xs text-slate-400 leading-relaxed border-l-2 border-white/10 pl-3 mb-3 hover:border-brand-primary/50 transition-colors">{req.reason}</p>
 
                                             {req.evidence && (
-                                                <div className="bg-black/40 p-2 rounded text-[10px] text-slate-500 font-mono truncate">
+                                                <div className="bg-black/40 p-2 rounded-sm text-[10px] text-slate-500 font-mono truncate border border-white/5">
                                                     "{req.evidence[0]}"
                                                 </div>
                                             )}

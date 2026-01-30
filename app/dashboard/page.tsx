@@ -65,7 +65,7 @@ export default function Dashboard() {
                             <p className="text-sm font-bold text-white leading-none mb-1">{user?.name || 'Official Auditor'}</p>
                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-sans font-bold">Node ID: AU-9921</p>
                         </div>
-                        <div className="w-10 h-10 rounded-full border border-brand-primary/20 flex items-center justify-center font-heading text-xl text-brand-primary bg-brand-primary/5">
+                        <div className="w-10 h-10 rounded-lg border border-brand-primary/20 flex items-center justify-center font-heading text-xl text-brand-primary bg-brand-primary/5">
                             {user?.name?.[0] || 'A'}
                         </div>
                     </div>
@@ -81,7 +81,7 @@ export default function Dashboard() {
                         { label: 'Avg Integrity Score', value: audits.length > 0 ? Math.round(audits.reduce((acc, curr) => acc + (curr.score || 0), 0) / audits.length) + '%' : '0%', icon: <Gavel size={18} /> },
                         { label: 'Operator Role', value: user?.role || 'AUDITOR', icon: <Shield size={18} />, color: 'text-brand-primary' }
                     ].map((stat, i) => (
-                        <div key={i} className="glass p-8 rounded-2xl border-white/5">
+                        <div key={i} className="glass p-8 rounded border-white/5">
                             <div className="flex justify-between items-start mb-6">
                                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider font-sans">{stat.label}</p>
                                 <div className="text-slate-600">{stat.icon}</div>
@@ -94,32 +94,32 @@ export default function Dashboard() {
                 {/* Audit Controls */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
                     <div>
-                        <h2 className="text-3xl font-heading text-white italic">Compliance Snapshots</h2>
+                        <h2 className="text-3xl font-heading text-white tracking-tight">Compliance Snapshots</h2>
                         <p className="text-slate-500 text-sm mt-1">Reviewing forensic audit records for organization node AU-192.</p>
                     </div>
-                    <Link href="/audit" className="btn btn-primary px-8 py-4 text-base font-bold gap-3 rounded-xl shadow-2xl">
+                    <Link href="/audit" className="btn btn-primary px-8 py-4 text-base font-bold gap-3 shadow-2xl">
                         <Plus size={20} /> Initialize New Audit
                     </Link>
                 </div>
 
                 {/* Audit Table */}
-                <div className="glass rounded-2xl overflow-hidden border-white/5">
+                <div className="glass rounded overflow-hidden border-white/5">
                     <div className="p-8 border-b border-white/5 flex flex-col sm:flex-row gap-6 justify-between items-center bg-white/[0.01]">
                         <div className="relative w-full max-w-sm">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
                             <input
                                 type="text"
                                 placeholder="Search audit records..."
-                                className="w-full bg-brand-black border border-white/5 rounded-xl py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-brand-primary/50 transition-all font-medium font-sans"
+                                className="w-full bg-brand-black border border-white/5 rounded-sm py-3 pl-12 pr-4 text-sm text-white outline-none focus:border-brand-primary/50 transition-all font-medium font-sans"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <div className="flex gap-3">
-                            <button className="btn btn-secondary py-2.5 px-4 rounded-xl text-xs font-bold gap-2">
+                            <button className="btn btn-secondary py-2.5 px-4 rounded-sm text-xs font-bold gap-2">
                                 <Filter size={16} /> Filter
                             </button>
-                            <button className="btn btn-secondary py-2.5 px-4 rounded-xl text-xs font-bold gap-2">
+                            <button className="btn btn-secondary py-2.5 px-4 rounded-sm text-xs font-bold gap-2">
                                 <Calendar size={16} /> Session Range
                             </button>
                         </div>
@@ -158,10 +158,10 @@ export default function Dashboard() {
                                     </tr>
                                 ) : (
                                     audits.filter(a => a.filename?.toLowerCase().includes(searchTerm.toLowerCase())).map((audit) => (
-                                        <tr key={audit.id} className="hover:bg-white/[0.01] transition-colors group italic">
+                                        <tr key={audit.id} className="hover:bg-white/[0.01] transition-colors group">
                                             <td className="px-8 py-8">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="p-3 bg-brand-muted/40 rounded-xl border border-white/5">
+                                                    <div className="p-3 bg-brand-muted/40 rounded-md border border-white/5">
                                                         <FileText size={20} className="text-slate-400 group-hover:text-brand-primary transition-colors" />
                                                     </div>
                                                     <div>
@@ -174,7 +174,7 @@ export default function Dashboard() {
                                             <td className="px-8 py-8 font-heading text-slate-200">{audit.framework_id || 'DPDP Act 2023'}</td>
                                             <td className="px-8 py-8">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-1.5 bg-brand-muted rounded-full overflow-hidden">
+                                                    <div className="w-10 h-1.5 bg-brand-muted rounded-sm overflow-hidden">
                                                         <div
                                                             className={`h-full ${audit.score > 80 ? 'bg-emerald-500' : audit.score > 60 ? 'bg-amber-500' : 'bg-rose-500'}`}
                                                             style={{ width: `${audit.score || 0}%` }}
@@ -184,7 +184,7 @@ export default function Dashboard() {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-8">
-                                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border font-sans ${getVerdictStyle(audit.verdict)}`}>
+                                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-sm text-[10px] font-bold border font-sans uppercase tracking-wider ${getVerdictStyle(audit.verdict)}`}>
                                                     {audit.verdict === 'GREEN' ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
                                                     {audit.verdict}
                                                 </div>
@@ -202,7 +202,6 @@ export default function Dashboard() {
                             </tbody>
                         </table>
                     </div>
-
                     <div className="p-8 bg-white/[0.01] border-t border-white/5 flex justify-between items-center text-xs font-bold text-slate-600 font-sans uppercase tracking-widest">
                         <p>Showing {audits.length} record{audits.length !== 1 ? 's' : ''}</p>
                     </div>

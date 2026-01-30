@@ -104,14 +104,14 @@ export default function AuditWizard() {
                                     <button
                                         key={fw.id}
                                         onClick={() => setSelectedFramework(fw.id)}
-                                        className={`relative text-left p-10 rounded-2xl glass transition-all border ${selectedFramework === fw.id ? 'border-brand-primary shadow-2xl shadow-brand-primary/10' : 'border-white/5 opacity-60 hover:opacity-100 hover:border-white/20'}`}
+                                        className={`relative text-left p-10 rounded-sm glass transition-all border ${selectedFramework === fw.id ? 'border-brand-primary shadow-2xl shadow-brand-primary/10' : 'border-white/5 opacity-60 hover:opacity-100 hover:border-white/20'}`}
                                     >
                                         {selectedFramework === fw.id && (
                                             <div className="absolute top-6 right-6 text-brand-primary">
                                                 <CheckCircle size={28} />
                                             </div>
                                         )}
-                                        <h3 className="text-3xl font-heading text-white mb-4 italic">{fw.name}</h3>
+                                        <h3 className="text-3xl font-heading text-white mb-4 tracking-tight">{fw.name}</h3>
                                         <p className="text-slate-400 text-sm font-medium mb-10 leading-relaxed">{fw.description}</p>
                                         <div className="flex gap-8 border-t border-white/5 pt-8 font-sans font-bold text-[10px] uppercase tracking-widest text-slate-500">
                                             <div>
@@ -130,7 +130,7 @@ export default function AuditWizard() {
                             <div className="flex justify-end pt-8">
                                 <button
                                     onClick={() => setStep(2)}
-                                    className="btn btn-primary h-16 px-12 text-base font-bold gap-3 rounded-xl shadow-2xl group"
+                                    className="btn btn-primary h-16 px-12 text-base font-bold gap-3 rounded-sm shadow-2xl group"
                                 >
                                     Confirm and Proceed <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                                 </button>
@@ -151,13 +151,13 @@ export default function AuditWizard() {
                                 >
                                     <ArrowLeft size={16} /> Re-calibrate Baseline
                                 </button>
-                                <h2 className="text-5xl font-heading text-white mb-6 italic">Secure <span className="text-brand-primary">Asset Ingestion</span></h2>
+                                <h2 className="text-5xl font-heading text-white mb-6 tracking-tight">Secure <span className="text-brand-primary">Asset Ingestion</span></h2>
                                 <p className="text-slate-400 text-lg leading-relaxed">
                                     Upload the fiduciary document for semantic auditing. The asset will be pre-processed and fragmented for agentic verification against <b>{frameworks.find(f => f.id === selectedFramework)?.name}</b>.
                                 </p>
                             </div>
 
-                            <div className="glass rounded-3xl border-dashed border-2 border-brand-primary/20 p-20 text-center relative group hover:border-brand-primary/40 transition-all cursor-pointer overflow-hidden shadow-inner">
+                            <div className="glass rounded border-dashed border-2 border-brand-primary/20 p-20 text-center relative group hover:border-brand-primary/40 transition-all cursor-pointer overflow-hidden shadow-inner">
                                 <input
                                     type="file"
                                     accept=".pdf"
@@ -166,7 +166,7 @@ export default function AuditWizard() {
                                     disabled={uploading}
                                 />
                                 <div className="space-y-8 relative z-0">
-                                    <div className="w-24 h-24 bg-brand-primary/5 rounded-3xl border border-brand-primary/10 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
+                                    <div className="w-24 h-24 bg-brand-primary/5 rounded border border-brand-primary/10 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                                         {file ? <FileText className="text-brand-primary w-12 h-12" /> : <Upload className="text-brand-primary w-12 h-12" />}
                                     </div>
                                     {file ? (
@@ -182,7 +182,7 @@ export default function AuditWizard() {
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            <p className="text-2xl font-heading text-white italic">Drop fiduciary asset here</p>
+                                            <p className="text-2xl font-heading text-white tracking-tight">Drop fiduciary asset here</p>
                                             <p className="text-slate-500 text-sm font-medium">Standard PDF format required for geometric mapping.</p>
                                         </div>
                                     )}
@@ -201,7 +201,7 @@ export default function AuditWizard() {
                                 <button
                                     onClick={startProcessing}
                                     disabled={!file || uploading}
-                                    className="btn btn-primary h-16 px-12 text-base font-bold gap-3 rounded-xl shadow-2xl disabled:opacity-30 disabled:shadow-none transition-all group"
+                                    className="btn btn-primary h-16 px-12 text-base font-bold gap-3 rounded-sm shadow-2xl disabled:opacity-30 disabled:shadow-none transition-all group"
                                 >
                                     {uploading ? 'Initializing Agents...' : 'Start Audit Processing'}
                                     {!uploading && <Cpu size={20} className="group-hover:rotate-12 transition-transform" />}
