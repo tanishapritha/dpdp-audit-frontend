@@ -21,10 +21,21 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchAudits = async () => {
             try {
-                const res = await apiClient.get('/audits');
-                setAudits(res.data);
+                // Try fetching audits (or policies)
+                // If /audits 404s, we might need /policies. 
+                // For now, attempting /policies as primary based on typical naming.
+                try {
+                    const res = await apiClient.get('/policies/');
+                    setAudits(res.data);
+                } catch (firstErr) {
+                    // Fallback attempt or just suppress
+                    console.warn("Could not fetch /policies/, trying /audits");
+                    const res = await apiClient.get('/audits');
+                    setAudits(res.data);
+                }
             } catch (err) {
-                console.error("Failed to fetch audits", err);
+                console.error("Failed to fetch registry data. Backend might be empty.", err);
+                setAudits([]); // Safely default to empty
             } finally {
                 setIsLoading(false);
             }

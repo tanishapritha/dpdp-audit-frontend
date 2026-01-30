@@ -70,10 +70,17 @@ export default function AuditRoom() {
                     if (newLogs) setLogs(newLogs);
 
                     if (newStatus === 'COMPLETED') {
-                        // Switch mode immediately
-                        const reportRes = await apiClient.get(`/${id}/report`);
-                        setReport(reportRes.data);
-                        setActiveTab('findings');
+                        // Small delay to ensure DB consistency
+                        await new Promise(r => setTimeout(r, 500));
+
+                        try {
+                            const reportRes = await apiClient.get(`/${id}/report`);
+                            setReport(reportRes.data);
+                            setActiveTab('findings');
+                        } catch (err) {
+                            console.error("Report generation lag:", err);
+                            // It might be 404 momentarily, we can retry or let the user click 'Findings' manually if needed
+                        }
                     }
                 }
             } catch (err) {
