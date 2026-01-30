@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Mail, Loader2, AlertTriangle, Cpu, ArrowRight, Gavel } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import apiClient from '@/lib/api-client';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('test@example.com');
@@ -18,20 +19,26 @@ export default function LoginPage() {
         setError('');
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const formData = new FormData();
+            formData.append('username', email);
+            formData.append('password', password);
 
-            if (email === 'test@example.com' && password === 'password123') {
-                login('mock-jwt-token', {
-                    id: '1',
-                    email: 'test@example.com',
-                    name: 'Official Auditor',
-                    role: 'ADMIN'
-                });
-            } else {
+            const response = await apiClient.post('/login/access-token', formData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            const { access_token, user } = response.data;
+
+            login(access_token, user);
+        } catch (err: any) {
+            console.error("Login Error:", err);
+            if (err.response?.status === 401) {
                 setError('Invalid authorization credentials. Access denied by Security Protocol.');
+            } else {
+                setError('System communication failure. Please verify connection to the Audit Node.');
             }
-        } catch (err) {
-            setError('System communication failure. Please verify connection to the Audit Node.');
         } finally {
             setIsLoading(false);
         }

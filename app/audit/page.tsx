@@ -1,49 +1,63 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Shield, Upload, CheckCircle, ArrowRight, ArrowLeft,
-    FileText, Search, ShieldCheck, Gavel, Cpu, AlertCircle
+    FileText, Search, ShieldCheck, Gavel, Cpu, AlertCircle, History
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-const FRAMEWORKS = [
-    {
-        id: 'dpdp-2023',
-        name: 'DPDP Act 2023',
-        description: 'Digital Personal Data Protection Act - The primary foundation for data privacy in modern India.',
-        sections: 44,
-        complexity: 'High'
-    },
-    {
-        id: 'gdpr-compl',
-        name: 'GDPR Alignment',
-        description: 'Supplemental audit for General Data Protection Regulation compatibility in global jurisdictions.',
-        sections: 99,
-        complexity: 'Very High'
-    }
-];
+import apiClient from '@/lib/api-client';
 
 export default function AuditWizard() {
     const [step, setStep] = useState(1);
-    const [selectedFramework, setSelectedFramework] = useState(FRAMEWORKS[0].id);
+    const [frameworks, setFrameworks] = useState<any[]>([]);
+    const [selectedFramework, setSelectedFramework] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const router = useRouter();
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        const fetchFrameworks = async () => {
+            try {
+                const res = await apiClient.get('/frameworks/');
+                setFrameworks(res.data);
+                if (res.data.length > 0) {
+                    setSelectedFramework(res.data[0].id);
+                }
+            } catch (err) {
+                console.error("Failed to fetch frameworks", err);
+            }
+        };
+        fetchFrameworks();
+    }, []);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files?.[0]) {
             setFile(e.target.files[0]);
         }
     };
 
-    const startProcessing = () => {
+    const startProcessing = async () => {
+        if (!file || !selectedFramework) return;
         setUploading(true);
-        // Simulate upload and initialization
-        setTimeout(() => {
-            router.push('/audit/p-123/processing');
-        }, 2000);
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('framework_id', selectedFramework);
+
+        try {
+            const res = await apiClient.post('/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            const { policy_id } = res.data;
+            router.push(`/audit/${policy_id}/processing`);
+        } catch (err) {
+            console.error("Upload failed", err);
+            setUploading(false);
+        }
     };
 
     return (
@@ -86,7 +100,7 @@ export default function AuditWizard() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {FRAMEWORKS.map((fw) => (
+                                {frameworks.map((fw) => (
                                     <button
                                         key={fw.id}
                                         onClick={() => setSelectedFramework(fw.id)}
@@ -102,7 +116,7 @@ export default function AuditWizard() {
                                         <div className="flex gap-8 border-t border-white/5 pt-8 font-sans font-bold text-[10px] uppercase tracking-widest text-slate-500">
                                             <div>
                                                 <p>Clauses</p>
-                                                <p className="text-white text-lg mt-1 font-heading">{fw.sections}</p>
+                                                <p className="text-white text-lg mt-1 font-heading">{fw.sections_count || fw.sections}</p>
                                             </div>
                                             <div>
                                                 <p>Complexity</p>
@@ -139,7 +153,7 @@ export default function AuditWizard() {
                                 </button>
                                 <h2 className="text-5xl font-heading text-white mb-6 italic">Secure <span className="text-brand-primary">Asset Ingestion</span></h2>
                                 <p className="text-slate-400 text-lg leading-relaxed">
-                                    Upload the fiduciary document for semantic auditing. The asset will be pre-processed and fragmented for agentic verification against <b>{FRAMEWORKS.find(f => f.id === selectedFramework)?.name}</b>.
+                                    Upload the fiduciary document for semantic auditing. The asset will be pre-processed and fragmented for agentic verification against <b>{frameworks.find(f => f.id === selectedFramework)?.name}</b>.
                                 </p>
                             </div>
 
@@ -148,7 +162,7 @@ export default function AuditWizard() {
                                     type="file"
                                     accept=".pdf"
                                     className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                                    onChange={handleFileUpload}
+                                    onChange={handleFileSelect}
                                     disabled={uploading}
                                 />
                                 <div className="space-y-8 relative z-0">

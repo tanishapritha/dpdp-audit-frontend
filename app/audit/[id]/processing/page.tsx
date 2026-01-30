@@ -3,58 +3,53 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Shield, Loader2, CheckCircle, Search,
+    Shield, Loader2, CheckCircle,
     Database, Zap, Lock, Cpu, Gavel,
     Terminal, Activity, LayoutGrid
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-
-const LOG_MESSAGES = [
-    { agent: 'Planner', message: 'Decomposing DPDP document into 14 fiduciary requirements...', type: 'info' },
-    { agent: 'Retriever', message: 'Scanning asset geometry for Section 8: Personal Data Accuracy.', type: 'info' },
-    { agent: 'Reasoner', message: 'Analyzing data retention clauses for conflict with Sec 12.', type: 'warning' },
-    { agent: 'Verifier', message: 'Cross-verifying reasoner output against legal vector store.', type: 'info' },
-    { agent: 'Planner', message: 'Synthesizing forensic risk map for finalized report.', type: 'info' }
-];
+import { useRouter, useParams } from 'next/navigation';
+import apiClient from '@/lib/api-client';
 
 export default function ProcessingRoom() {
-    const [progress, setProgress] = useState(0);
-    const [logs, setLogs] = useState<any[]>([]);
-    const [currentStep, setCurrentStep] = useState(0);
+    const { id } = useParams();
     const router = useRouter();
+
+    const [progress, setProgress] = useState(0);
+    const [status, setStatus] = useState('PENDING');
+    const [logs, setLogs] = useState<any[]>([]);
+
     const logEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    clearInterval(timer);
-                    return 100;
-                }
-                return prev + 0.5;
-            });
-        }, 50);
+        if (!id) return;
 
-        const logTimer = setInterval(() => {
-            setLogs(prev => {
-                if (prev.length < LOG_MESSAGES.length) {
-                    return [...prev, LOG_MESSAGES[prev.length]];
-                }
-                return prev;
-            });
-        }, 2000);
+        const pollStatus = async () => {
+            try {
+                const res = await apiClient.get(`/${id}/status`);
 
-        return () => {
-            clearInterval(timer);
-            clearInterval(logTimer);
+                const { status: newStatus, progress: newProgress, logs: newLogs } = res.data;
+
+                setStatus(newStatus);
+                setProgress(Math.floor(newProgress * 100));
+
+                if (newLogs) {
+                    setLogs(newLogs);
+                }
+
+                if (newStatus === 'COMPLETED') {
+                    setTimeout(() => router.push(`/audit/${id}/report`), 1000);
+                } else if (newStatus === 'FAILED') {
+                    // Handle failure
+                }
+
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
         };
-    }, []);
 
-    useEffect(() => {
-        if (progress >= 100) {
-            setTimeout(() => router.push('/audit/p-123/report'), 1500);
-        }
-    }, [progress, router]);
+        const interval = setInterval(pollStatus, 2000);
+        return () => clearInterval(interval);
+    }, [id, router]);
 
     useEffect(() => {
         logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -69,6 +64,7 @@ export default function ProcessingRoom() {
 
     return (
         <div className="min-h-screen bg-brand-black text-[#f0f2f5] flex flex-col font-sans">
+            {/* Header */}
             <header className="border-b border-white/5 bg-brand-black/90 backdrop-blur-xl">
                 <div className="container mx-auto px-6 py-5 flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -97,14 +93,13 @@ export default function ProcessingRoom() {
                             className="absolute top-0 left-0 h-full bg-brand-primary shadow-[0_0_20px_rgba(197,160,89,0.5)]"
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
-                            transition={{ duration: 0.1 }}
+                            transition={{ duration: 0.5 }} // Smooth out the jumps
                         />
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {steps.map((s, i) => {
                             const isActive = progress > (i * 25);
-                            const isCurrent = progress > (i * 25) && progress < ((i + 1) * 25);
                             return (
                                 <div key={i} className={`glass p-6 rounded-2xl border transition-all duration-700 ${isActive ? 'border-brand-primary/40' : 'border-white/5 opacity-30'}`}>
                                     <div className={`mb-4 transition-colors ${isActive ? 'text-brand-primary' : 'text-slate-600'}`}>{s.icon}</div>
@@ -143,14 +138,13 @@ export default function ProcessingRoom() {
                                     <span className="text-[10px] font-bold text-brand-primary uppercase tracking-tighter w-16 pt-1">[{log.agent}]</span>
                                     <div className="flex-grow space-y-1">
                                         <p className="text-sm text-slate-300 leading-relaxed font-medium">{log.message}</p>
-                                        <div className="text-[9px] text-slate-600 font-bold font-sans">SHA256: 8f23...{i}4ac // TRACE_OK</div>
                                     </div>
                                 </motion.div>
                             ))}
                         </AnimatePresence>
                         <div ref={logEndRef} />
 
-                        {progress < 100 && (
+                        {status !== 'COMPLETED' && (
                             <div className="flex gap-4 italic animate-pulse">
                                 <span className="text-[10px] font-bold text-slate-700 uppercase tracking-tighter w-16 pt-1">[Sys]</span>
                                 <p className="text-sm text-slate-700 font-medium tracking-wide">Synthesizing inference nodes...</p>
@@ -161,20 +155,12 @@ export default function ProcessingRoom() {
                     <div className="p-6 border-t border-white/5 bg-brand-black/40 flex justify-between items-center text-[10px] font-bold text-slate-600 uppercase tracking-widest relative z-10">
                         <div className="flex items-center gap-2">
                             <Activity size={12} className="text-emerald-500" />
-                            Latency: 142ms
+                            Status: {status}
                         </div>
-                        <div>Memory Usage: 4.2GB</div>
+                        <div>Progress: {progress}%</div>
                     </div>
                 </div>
             </main>
-
-            <footer className="p-12 border-t border-white/5">
-                <div className="container mx-auto flex justify-center gap-20 grayscale opacity-40">
-                    <div className="flex items-center gap-2 font-heading text-lg italic"><Cpu size={14} /> Agentic_Chain</div>
-                    <div className="flex items-center gap-2 font-heading text-lg italic"><Lock size={14} /> Fiduciary_Lock</div>
-                    <div className="flex items-center gap-2 font-heading text-lg italic"><LayoutGrid size={14} /> Geometric_Index</div>
-                </div>
-            </footer>
         </div>
     );
 }

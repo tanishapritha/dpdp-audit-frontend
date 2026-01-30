@@ -1,49 +1,36 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
     Plus, Search, Filter, Shield,
     Calendar, FileText,
     CheckCircle, AlertTriangle,
-    ArrowUpRight, Gavel, FileCheck, History
+    ArrowUpRight, Gavel, FileCheck, History, Loader2, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-
-const MOCK_AUDITS = [
-    {
-        id: 'p-8821',
-        filename: 'privacy_v2_final.pdf',
-        date: '2026-01-20',
-        framework: 'DPDP Act 2023',
-        score: 88,
-        verdict: 'GREEN',
-        status: 'COMPLETED'
-    },
-    {
-        id: 'p-7712',
-        filename: 'standard_terms_2025.pdf',
-        date: '2026-01-15',
-        framework: 'DPDP Act 2023',
-        score: 42,
-        verdict: 'RED',
-        status: 'COMPLETED'
-    },
-    {
-        id: 'p-6605',
-        filename: 'mobile_app_policy.pdf',
-        date: '2026-01-12',
-        framework: 'DPDP Act 2023',
-        score: 65,
-        verdict: 'YELLOW',
-        status: 'COMPLETED'
-    }
-];
+import apiClient from '@/lib/api-client';
 
 export default function Dashboard() {
     const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
+    const [audits, setAudits] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAudits = async () => {
+            try {
+                const res = await apiClient.get('/audits');
+                setAudits(res.data);
+            } catch (err) {
+                console.error("Failed to fetch audits", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchAudits();
+    }, []);
 
     const getVerdictStyle = (verdict: string) => {
         switch (verdict) {
@@ -78,10 +65,10 @@ export default function Dashboard() {
                 {/* Top Stats */}
                 <section className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
                     {[
-                        { label: 'Total Audits', value: '142', icon: <FileText size={18} /> },
-                        { label: 'Compliant Assets', value: '98', icon: <FileCheck size={18} />, color: 'text-emerald-500' },
-                        { label: 'Avg Integrity Score', value: '74%', icon: <Gavel size={18} /> },
-                        { label: 'System Uptime', value: '99.9%', icon: <History size={18} />, color: 'text-brand-primary' }
+                        { label: 'Total Audits', value: audits.length.toString(), icon: <FileText size={18} /> },
+                        { label: 'Compliant Assets', value: audits.filter(a => a.verdict === 'GREEN').length.toString(), icon: <FileCheck size={18} />, color: 'text-emerald-500' },
+                        { label: 'Avg Integrity Score', value: audits.length > 0 ? Math.round(audits.reduce((acc, curr) => acc + (curr.score || 0), 0) / audits.length) + '%' : '0%', icon: <Gavel size={18} /> },
+                        { label: 'Operator Role', value: user?.role || 'AUDITOR', icon: <Shield size={18} />, color: 'text-brand-primary' }
                     ].map((stat, i) => (
                         <div key={i} className="glass p-8 rounded-2xl border-white/5">
                             <div className="flex justify-between items-start mb-6">
@@ -140,61 +127,73 @@ export default function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/[0.04]">
-                                {MOCK_AUDITS.map((audit) => (
-                                    <tr key={audit.id} className="hover:bg-white/[0.01] transition-colors group italic">
-                                        <td className="px-8 py-8">
-                                            <div className="flex items-center gap-4">
-                                                <div className="p-3 bg-brand-muted/40 rounded-xl border border-white/5">
-                                                    <FileText size={20} className="text-slate-400 group-hover:text-brand-primary transition-colors" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-base font-heading text-white tracking-wide">{audit.filename}</p>
-                                                    <p className="text-[10px] text-slate-600 font-sans font-bold uppercase tracking-tighter mt-0.5">{audit.id}</p>
-                                                </div>
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-8 py-12 text-center text-slate-500">
+                                            <div className="flex flex-col items-center gap-4">
+                                                <Loader2 className="animate-spin text-brand-primary" size={24} />
+                                                <span className="text-xs font-mono uppercase tracking-widest">Constructing Registry...</span>
                                             </div>
-                                        </td>
-                                        <td className="px-8 py-8 text-sm text-slate-400 font-medium font-sans">{audit.date}</td>
-                                        <td className="px-8 py-8 font-heading text-slate-200">{audit.framework}</td>
-                                        <td className="px-8 py-8">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-1.5 bg-brand-muted rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full ${audit.score > 80 ? 'bg-emerald-500' : audit.score > 60 ? 'bg-amber-500' : 'bg-rose-500'}`}
-                                                        style={{ width: `${audit.score}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-sm font-bold text-white font-heading">{audit.score}%</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-8">
-                                            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border font-sans ${getVerdictStyle(audit.verdict)}`}>
-                                                {audit.verdict === 'GREEN' ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
-                                                {audit.verdict}
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-8 text-right">
-                                            <Link
-                                                href={`/audit/${audit.id}/report`}
-                                                className="text-slate-500 hover:text-brand-primary transition-colors p-2"
-                                            >
-                                                <ArrowUpRight size={24} />
-                                            </Link>
                                         </td>
                                     </tr>
-                                ))}
+                                ) : audits.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-8 py-12 text-center text-slate-500">
+                                            <div className="flex flex-col items-center gap-4">
+                                                <AlertCircle className="text-slate-600" size={24} />
+                                                <span className="text-xs font-mono uppercase tracking-widest">No audit records found. Initialize a new audit to begin.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    audits.filter(a => a.filename?.toLowerCase().includes(searchTerm.toLowerCase())).map((audit) => (
+                                        <tr key={audit.id} className="hover:bg-white/[0.01] transition-colors group italic">
+                                            <td className="px-8 py-8">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="p-3 bg-brand-muted/40 rounded-xl border border-white/5">
+                                                        <FileText size={20} className="text-slate-400 group-hover:text-brand-primary transition-colors" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-base font-heading text-white tracking-wide">{audit.filename}</p>
+                                                        <p className="text-[10px] text-slate-600 font-sans font-bold uppercase tracking-tighter mt-0.5">{audit.id.slice(0, 8)}...</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8 text-sm text-slate-400 font-medium font-sans">{new Date(audit.created_at || Date.now()).toLocaleDateString()}</td>
+                                            <td className="px-8 py-8 font-heading text-slate-200">{audit.framework_id || 'DPDP Act 2023'}</td>
+                                            <td className="px-8 py-8">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-1.5 bg-brand-muted rounded-full overflow-hidden">
+                                                        <div
+                                                            className={`h-full ${audit.score > 80 ? 'bg-emerald-500' : audit.score > 60 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                                                            style={{ width: `${audit.score || 0}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-sm font-bold text-white font-heading">{audit.score || 0}%</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8">
+                                                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold border font-sans ${getVerdictStyle(audit.verdict)}`}>
+                                                    {audit.verdict === 'GREEN' ? <CheckCircle size={12} /> : <AlertTriangle size={12} />}
+                                                    {audit.verdict}
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-8 text-right">
+                                                <Link
+                                                    href={`/audit/${audit.id}/report`}
+                                                    className="text-slate-500 hover:text-brand-primary transition-colors p-2"
+                                                >
+                                                    <ArrowUpRight size={24} />
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    )))}
                             </tbody>
                         </table>
                     </div>
 
                     <div className="p-8 bg-white/[0.01] border-t border-white/5 flex justify-between items-center text-xs font-bold text-slate-600 font-sans uppercase tracking-widest">
-                        <p>Snapshot showing 3 of 142 records</p>
-                        <div className="flex gap-2">
-                            {[1, 2, 3].map(p => (
-                                <button key={p} className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${p === 1 ? 'bg-brand-primary border-brand-primary text-brand-black shadow-lg shadow-brand-primary/20' : 'border-white/5 text-slate-600 hover:border-brand-primary/30 hover:text-white'}`}>
-                                    {p}
-                                </button>
-                            ))}
-                        </div>
+                        <p>Showing {audits.length} record{audits.length !== 1 ? 's' : ''}</p>
                     </div>
                 </div>
             </main>
