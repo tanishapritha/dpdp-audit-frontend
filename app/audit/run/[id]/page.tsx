@@ -65,21 +65,30 @@ export default function AuditRoom() {
                     const res = await apiClient.get(`/${id}/status`);
                     const { status: newStatus, progress: newProgress, logs: newLogs } = res.data;
 
-                    setStatus(newStatus);
+                    // Normalize status for UI
+                    const normStatus = (newStatus || 'PENDING').toUpperCase();
+                    setStatus(newStatus); // Keep raw for debugging
                     setProgress(Math.floor(newProgress * 100));
                     if (newLogs) setLogs(newLogs);
 
-                    if (newStatus === 'COMPLETED') {
+                    // Robust completion check: Status flag OR Log signal
+                    const isLogFinished = newLogs?.some((l: any) => l.message?.includes('Audit Finalized'));
+                    const isSuccess = normStatus === 'COMPLETED' || normStatus === 'SUCCESS' || normStatus === 'DONE' || isLogFinished;
+
+                    if (isSuccess) {
+                        setStatus('COMPLETED'); // Force UI to completed state
+
                         // Small delay to ensure DB consistency
-                        await new Promise(r => setTimeout(r, 500));
+                        await new Promise(r => setTimeout(r, 1000));
 
                         try {
                             const reportRes = await apiClient.get(`/${id}/report`);
-                            setReport(reportRes.data);
-                            setActiveTab('findings');
+                            if (reportRes.data) {
+                                setReport(reportRes.data);
+                                setActiveTab('findings');
+                            }
                         } catch (err) {
                             console.error("Report generation lag:", err);
-                            // It might be 404 momentarily, we can retry or let the user click 'Findings' manually if needed
                         }
                     }
                 }
