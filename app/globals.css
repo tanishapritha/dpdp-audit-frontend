@@ -47,15 +47,23 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
-    font-family: var(--font-inter), sans-serif;
-    @apply selection:bg-brand-primary selection:text-brand-black;
+    font-family: var(--font-geist-sans), sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 
   h1,
   h2,
   h3,
+  h4,
   .font-heading {
-    font-family: var(--font-heading), serif;
+    font-family: var(--font-geist-sans), sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    /* Tight tracking for modern look */
+  }
+
+  .font-mono {
+    font-family: var(--font-geist-mono), monospace;
   }
 }
 

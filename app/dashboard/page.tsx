@@ -180,7 +180,7 @@ export default function Dashboard() {
                                             </td>
                                             <td className="px-8 py-8 text-right">
                                                 <Link
-                                                    href={`/audit/${audit.id}/report`}
+                                                    href={`/audit/run/${audit.id}`}
                                                     className="text-slate-500 hover:text-brand-primary transition-colors p-2"
                                                 >
                                                     <ArrowUpRight size={24} />

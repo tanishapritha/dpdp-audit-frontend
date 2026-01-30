@@ -53,7 +53,7 @@ export default function AuditWizard() {
                 }
             });
             const { policy_id } = res.data;
-            router.push(`/audit/${policy_id}/processing`);
+            router.push(`/audit/run/${policy_id}`);
         } catch (err) {
             console.error("Upload failed", err);
             setUploading(false);
