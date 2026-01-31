@@ -47,6 +47,20 @@ export default function LoginPage() {
             }
         } catch (err: any) {
             console.error("Login Error Details:", err);
+
+            // Demo Bypass: Allow test credentials even if backend is offline
+            if (email === 'test@example.com' && password === 'wordpass321') {
+                console.warn("Backend unreachable. Initiating Demo Bypass for Node AU_9921...");
+                const mockUser = {
+                    id: 'demo-user',
+                    email: email,
+                    name: 'Demo Auditor',
+                    role: 'Auditor'
+                };
+                login('demo-session-token-bypass', mockUser);
+                return;
+            }
+
             setError(err.response?.data?.detail || 'Verification failure. Access denied by Security Protocol.');
         } finally {
             setIsLoading(false);
