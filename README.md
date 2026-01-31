@@ -1,4 +1,4 @@
-# PolicyPulse Frontend
+# Company Compliance Frontend
 
 Frontend interface for DPDP compliance auditing. This application allows users to upload privacy policies and receive automated regulatory assessments.
 

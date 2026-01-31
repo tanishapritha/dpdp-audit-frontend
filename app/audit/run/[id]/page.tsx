@@ -9,9 +9,14 @@ import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import {
     Shield, Activity, Terminal, CheckCircle,
-    AlertTriangle, ChevronLeft, Loader2, Maximize2
+    AlertTriangle, ChevronLeft, Loader2, Maximize2,
+    Search, AlertCircle, FileSearch, ArrowRight
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
+import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
+import { highlightPlugin, Trigger } from '@react-pdf-viewer/highlight';
+import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
+import '@react-pdf-viewer/highlight/lib/styles/index.css';
 
 const StatusBadge = ({ status }: { status: string }) => {
     switch (status) {
@@ -31,18 +36,20 @@ export default function AuditRoom() {
     const [report, setReport] = useState<any>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
-    // UI Logic
     const [activeTab, setActiveTab] = useState<'console' | 'findings'>('console');
     const logEndRef = useRef<HTMLDivElement>(null);
     const defaultLayoutPluginInstance = defaultLayoutPlugin({ sidebarTabs: () => [] });
+    const pageNavigationPluginInstance = pageNavigationPlugin();
+    const highlightPluginInstance = highlightPlugin({
+        trigger: Trigger.None,
+    });
 
-    // 1. Initial Data Load (PDF + Status)
     useEffect(() => {
         if (!id) return;
 
         const initRoom = async () => {
             try {
-                // Fetch PDF Blob
+
                 const pdfRes = await apiClient.get(`/${id}/pdf`, { responseType: 'blob' });
                 setPdfUrl(URL.createObjectURL(pdfRes.data));
             } catch (err) {
@@ -52,7 +59,7 @@ export default function AuditRoom() {
         initRoom();
     }, [id]);
 
-    // 2. Poll Status or Fetch Report
+
     useEffect(() => {
         if (!id) return;
 
@@ -60,35 +67,61 @@ export default function AuditRoom() {
 
         const syncState = async () => {
             try {
-                // Check status
+
                 if (status !== 'COMPLETED') {
-                    const res = await apiClient.get(`/${id}/status`);
+                    let res;
+                    try {
+                        res = await apiClient.get(`/${id}/status`);
+                    } catch (e) {
+                        console.warn("Retrying status sync at /audit/" + id + "/status");
+                        res = await apiClient.get(`/audit/${id}/status`);
+                    }
+
                     const { status: newStatus, progress: newProgress, logs: newLogs } = res.data;
 
-                    // Normalize status for UI
+
                     const normStatus = (newStatus || 'PENDING').toUpperCase();
-                    setStatus(newStatus); // Keep raw for debugging
-                    setProgress(Math.floor(newProgress * 100));
+                    setStatus(newStatus);
+                    setProgress(Math.floor((newProgress || 0) * 100));
                     if (newLogs) setLogs(newLogs);
 
-                    // Robust completion check: Status flag OR Log signal
+
                     const isLogFinished = newLogs?.some((l: any) => l.message?.includes('Audit Finalized'));
                     const isSuccess = normStatus === 'COMPLETED' || normStatus === 'SUCCESS' || normStatus === 'DONE' || isLogFinished;
 
                     if (isSuccess) {
-                        setStatus('COMPLETED'); // Force UI to completed state
+                        setStatus('COMPLETED');
+                        console.log("Audit completion signal detected. Fetching final report...");
 
-                        // Small delay to ensure DB consistency
-                        await new Promise(r => setTimeout(r, 1000));
+
+                        await new Promise(r => setTimeout(r, 1200));
 
                         try {
-                            const reportRes = await apiClient.get(`/${id}/report`);
-                            if (reportRes.data) {
-                                setReport(reportRes.data);
+                            let reportRes;
+                            try {
+                                reportRes = await apiClient.get(`/${id}/report`);
+                            } catch (e) {
+                                console.warn("Retrying report fetch at /audit/" + id + "/report");
+                                reportRes = await apiClient.get(`/audit/${id}/report`);
+                            }
+                            console.log("Report API Response:", reportRes.data);
+
+
+                            const reportData = reportRes.data.report || reportRes.data;
+
+                            if (reportData && (reportData.requirements || reportData.findings)) {
+
+                                if (!reportData.requirements && reportData.findings) {
+                                    reportData.requirements = reportData.findings;
+                                }
+                                setReport(reportData);
                                 setActiveTab('findings');
+                                console.log("Report successfully loaded into state.");
+                            } else {
+                                console.warn("Report data received but missing requirements/findings array.");
                             }
                         } catch (err) {
-                            console.error("Report generation lag:", err);
+                            console.error("Report fetch failed after completion:", err);
                         }
                     }
                 }
@@ -104,7 +137,7 @@ export default function AuditRoom() {
         return () => clearInterval(interval);
     }, [id, status]);
 
-    // Auto-scroll logs
+
     useEffect(() => {
         if (activeTab === 'console') {
             logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -144,7 +177,11 @@ export default function AuditRoom() {
                             <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
                                 <Viewer
                                     fileUrl={pdfUrl}
-                                    plugins={[defaultLayoutPluginInstance]}
+                                    plugins={[
+                                        defaultLayoutPluginInstance,
+                                        pageNavigationPluginInstance,
+                                        highlightPluginInstance
+                                    ]}
                                     theme="dark"
                                 />
                             </Worker>
@@ -175,9 +212,8 @@ export default function AuditRoom() {
                         </button>
                     </div>
 
-                    {/* Content Area */}
+
                     <div className="flex-grow overflow-y-auto p-0 relative bg-brand-black/50">
-                        {/* 1. Console View */}
                         {activeTab === 'console' && (
                             <div className="p-6 space-y-2 font-mono text-xs">
                                 {logs.map((log, i) => (
@@ -201,30 +237,81 @@ export default function AuditRoom() {
                             </div>
                         )}
 
-                        {/* 2. Findings View */}
+
                         {activeTab === 'findings' && report && (
-                            <div className="p-4 space-y-4">
-                                <div className={`p-4 rounded-lg border ${report.overall_verdict === 'GREEN' ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                                    <h3 className="text-sm font-bold text-white mb-1">Audit Score: {report.score || 0}/100</h3>
-                                    <p className="text-xs text-slate-400">Verdict: {report.overall_verdict}</p>
+                            <div className="flex flex-col h-full bg-brand-black/40">
+                                <div className="p-6 border-b border-white/5 bg-brand-black/60 sticky top-0 z-10 backdrop-blur-md">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                            <Shield size={16} className="text-brand-primary" />
+                                            COMPLIANCE POSTURE
+                                        </h3>
+                                        <div className={`px-2 py-1 rounded-sm text-[10px] font-bold border ${report.overall_verdict === 'GREEN' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
+                                            {report.overall_verdict}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-white/5 p-3 rounded-sm border border-white/5">
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Audit Score</p>
+                                            <p className="text-xl font-heading text-white">{report.score || 0}%</p>
+                                        </div>
+                                        <div className="bg-white/5 p-3 rounded-sm border border-white/5">
+                                            <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">Critical Risks</p>
+                                            <p className="text-xl font-heading text-rose-500">
+                                                {report.requirements?.filter((r: any) => r.status === 'NON_COMPLIANT' || r.status === 'PARTIAL').length || 0}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    {report.requirements?.map((req: any, i: number) => (
-                                        <div key={i} className="p-4 rounded-sm bg-white/5 border border-white/5 hover:border-brand-primary/30 transition-colors group cursor-pointer">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h4 className="text-sm font-semibold text-slate-200">{req.title || `Requirement ${req.requirement_id}`}</h4>
-                                                <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider ${req.status === 'COMPLIANT' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>{req.status}</span>
-                                            </div>
-                                            <p className="text-xs text-slate-400 leading-relaxed border-l-2 border-white/10 pl-3 mb-3 hover:border-brand-primary/50 transition-colors">{req.reason}</p>
 
-                                            {req.evidence && (
-                                                <div className="bg-black/40 p-2 rounded-sm text-[10px] text-slate-500 font-mono truncate border border-white/5">
-                                                    "{req.evidence[0]}"
+                                <div className="p-6 space-y-6 overflow-y-auto flex-grow pb-20">
+                                    <div className="space-y-4">
+                                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-[0.2em] mb-4">Clause-Level Analysis</p>
+
+                                        {report.requirements?.map((req: any, i: number) => {
+                                            const isUrgent = req.status === 'NON_COMPLIANT' || req.status === 'PARTIAL';
+                                            return (
+                                                <div key={i} className={`p-4 rounded-sm border transition-all group ${isUrgent ? 'bg-rose-500/5 border-rose-500/20 hover:border-rose-500/40' : 'bg-white/5 border-white/10 hover:border-brand-primary/30'}`}>
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div className="flex items-start gap-2 max-w-[70%]">
+                                                            {isUrgent ? <AlertCircle size={14} className="text-rose-500 flex-shrink-0 mt-0.5" /> : <CheckCircle size={14} className="text-emerald-500 flex-shrink-0 mt-0.5" />}
+                                                            <h4 className="text-xs font-bold text-slate-200 leading-tight">
+                                                                {req.title || `Requirement ${i + 1}`}
+                                                            </h4>
+                                                        </div>
+                                                        <span className={`px-1.5 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-wider border ${req.status === 'COMPLIANT' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
+                                                            {req.status}
+                                                        </span>
+                                                    </div>
+
+                                                    <p className="text-[11px] text-slate-400 leading-relaxed mb-4 pl-4 border-l-2 border-white/10 italic">
+                                                        {req.reason}
+                                                    </p>
+
+                                                    {req.evidence && req.evidence.length > 0 && (
+                                                        <div className="space-y-2">
+                                                            <div className="bg-black/40 p-3 rounded-sm text-[10px] text-slate-400 font-mono border border-white/5 relative group-hover:bg-black/60 transition-colors">
+                                                                <Terminal size={12} className="absolute top-2 right-2 opacity-20" />
+                                                                <span className="text-brand-primary/60 block mb-1 uppercase font-bold text-[8px]">Extracted Trace:</span>
+                                                                {req.evidence[0]}
+                                                            </div>
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    const pageIdx = req.page_index !== undefined ? req.page_index : (req.page_number ? req.page_number - 1 : 0);
+                                                                    pageNavigationPluginInstance.jumpToPage(pageIdx);
+                                                                }}
+                                                                className="w-full flex items-center justify-center gap-2 py-2 rounded-sm bg-white/5 border border-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                                                            >
+                                                                <FileSearch size={14} /> Jump to Source Page {req.page_number || req.page_index + 1 || ''}
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
                         )}

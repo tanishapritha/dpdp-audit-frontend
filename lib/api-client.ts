@@ -9,7 +9,7 @@ const apiClient = axios.create({
     },
 });
 
-// Request Interceptor for Auth
+
 apiClient.interceptors.request.use((config) => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (token) {
@@ -20,7 +20,7 @@ apiClient.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-// Response Interceptor for Auth Errors
+
 apiClient.interceptors.response.use((response) => {
     return response;
 }, (error) => {

@@ -27,15 +27,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
+
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
 
-        if (storedToken && storedUser) {
+        if (storedToken && storedUser && storedUser !== 'undefined') {
             try {
+                const parsedUser = JSON.parse(storedUser);
                 setToken(storedToken);
-                setUser(JSON.parse(storedUser));
+                setUser(parsedUser);
             } catch (e) {
+                console.error("Auth state corruption", e);
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
             }
@@ -44,12 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = (newToken: string, userData: User) => {
+        if (!userData || !newToken) {
+            console.error("Invalid login data received", { newToken, userData });
+            return;
+        }
         localStorage.setItem('token', newToken);
         localStorage.setItem('user', JSON.stringify(userData));
         setToken(newToken);
         setUser(userData);
         router.push('/dashboard');
     };
+
 
     const logout = () => {
         localStorage.removeItem('token');

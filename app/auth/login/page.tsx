@@ -8,7 +8,7 @@ import apiClient from '@/lib/api-client';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('test@example.com');
-    const [password, setPassword] = useState('password123');
+    const [password, setPassword] = useState('wordpass321');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const { login } = useAuth();
@@ -23,32 +23,42 @@ export default function LoginPage() {
             formData.append('username', email);
             formData.append('password', password);
 
+
             const response = await apiClient.post('/login/access-token', formData, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
             });
 
-            const { access_token, user } = response.data;
+            const { access_token, token_type, user: backendUser } = response.data;
+            const token = access_token || response.data.token;
 
-            login(access_token, user);
-        } catch (err: any) {
-            console.error("Login Error:", err);
-            if (err.response?.status === 401) {
-                setError('Invalid authorization credentials. Access denied by Security Protocol.');
+            const finalUser = backendUser || {
+                id: 'current-user',
+                email: email,
+                name: email.split('@')[0],
+                role: 'Auditor'
+            };
+
+            if (token) {
+                login(token, finalUser);
             } else {
-                setError('System communication failure. Please verify connection to the Audit Node.');
+                throw new Error("Token missing from server response");
             }
+        } catch (err: any) {
+            console.error("Login Error Details:", err);
+            setError(err.response?.data?.detail || 'Verification failure. Access denied by Security Protocol.');
         } finally {
             setIsLoading(false);
         }
+
     };
 
     return (
-        <div className="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_top,_#11151c_0%,_transparent_100%)]">
+        <div className="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_top,_#11151c_0%,_transparent_100%)] selection:bg-brand-primary/20">
             <div className="absolute top-12 flex items-center gap-3">
                 <Shield className="text-brand-primary w-10 h-10" />
-                <span className="text-3xl font-heading tracking-tight text-white">PolicyPulse</span>
+                <span className="text-3xl font-heading tracking-tight text-white italic">PolicyPulse</span>
             </div>
 
             <motion.div
@@ -56,22 +66,22 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-[440px] relative z-10"
             >
-                <div className="glass p-12 rounded-2xl space-y-10 border-white/5 shadow-2xl">
-                    <div className="text-center space-y-3">
-                        <h1 className="text-4xl font-heading text-white italic">Auditor Verification</h1>
-                        <p className="text-slate-500 text-sm font-medium">Please authenticate to access the compliance infrastructure.</p>
+                <div className="glass p-12 rounded-sm space-y-10 border-white/5 shadow-2xl">
+                    <div className="text-center space-y-4">
+                        <h1 className="text-4xl font-heading text-white italic tracking-tight">Auditor Verification</h1>
+                        <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] font-sans">Official Access Gateway // NODE_AU_9921</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="space-y-5">
                             <div className="space-y-2">
-                                <label className="text-[13px] font-bold text-slate-400 pl-1 uppercase tracking-wider font-sans">Authorized Identifier</label>
+                                <label className="text-[11px] font-bold text-slate-400 pl-1 uppercase tracking-widest font-sans">Authorized Identifier</label>
                                 <div className="relative group">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-brand-primary transition-colors" size={18} />
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-brand-primary transition-colors" size={18} />
                                     <input
                                         type="email"
                                         required
-                                        className="w-full bg-[#0d1117] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:border-brand-primary/50 focus:ring-1 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-slate-700 font-medium font-sans"
+                                        className="w-full bg-[#0d1117] border border-white/5 rounded-sm py-4 pl-12 pr-4 text-white focus:border-brand-primary/50 focus:ring-1 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-slate-800 font-medium font-sans"
                                         placeholder="official@node.gov"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -81,14 +91,14 @@ export default function LoginPage() {
 
                             <div className="space-y-2">
                                 <div className="flex justify-between items-end pl-1">
-                                    <label className="text-[13px] font-bold text-slate-400 uppercase tracking-wider font-sans">Access Key</label>
+                                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-sans">Access Key</label>
                                 </div>
                                 <div className="relative group">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-brand-primary transition-colors" size={18} />
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-brand-primary transition-colors" size={18} />
                                     <input
                                         type="password"
                                         required
-                                        className="w-full bg-[#0d1117] border border-white/5 rounded-xl py-4 pl-12 pr-4 text-white focus:border-brand-primary/50 focus:ring-1 focus:ring-brand-primary/20 outline-none transition-all placeholder:text-slate-700 font-medium font-sans"
+                                        className="w-full bg-[#0d1117] border border-white/5 rounded-sm py-4 pl-12 pr-4 text-white focus:border-brand-primary/50 focus:ring-1 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-slate-800 font-medium font-sans"
                                         placeholder="••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -98,22 +108,23 @@ export default function LoginPage() {
                         </div>
 
                         {error && (
-                            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 px-4 py-3 rounded-lg text-xs font-bold flex items-center gap-2 font-sans">
+                            <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 px-4 py-3 rounded-sm text-[10px] font-bold flex items-center gap-2 font-sans uppercase tracking-wider">
                                 <AlertTriangle size={14} /> {error}
                             </div>
                         )}
 
                         <button
                             disabled={isLoading}
-                            className="btn btn-primary w-full py-4 text-base font-bold gap-3 font-sans"
+                            className="btn btn-primary w-full py-4 text-sm font-bold gap-3 rounded-sm"
                         >
                             {isLoading ? (
                                 <Loader2 className="animate-spin" size={20} />
                             ) : (
-                                <>Sign and Verification Audit <ArrowRight size={18} /></>
+                                <>Sign and Authorize <ArrowRight size={18} /></>
                             )}
                         </button>
                     </form>
+
 
                     <div className="flex items-center gap-4 bg-white/[0.02] p-5 rounded-xl border border-white/5">
                         <div className="bg-brand-primary/10 p-2.5 rounded-lg border border-brand-primary/20">
