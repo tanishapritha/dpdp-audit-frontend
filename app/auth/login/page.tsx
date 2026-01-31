@@ -58,7 +58,7 @@ export default function LoginPage() {
         <div className="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 bg-[radial-gradient(circle_at_top,_#11151c_0%,_transparent_100%)] selection:bg-brand-primary/20">
             <div className="absolute top-12 flex items-center gap-3">
                 <Shield className="text-brand-primary w-10 h-10" />
-                <span className="text-3xl font-heading tracking-tight text-white italic">PolicyPulse</span>
+                <span className="text-3xl font-heading tracking-tight text-white italic">Compliance Center</span>
             </div>
 
             <motion.div
@@ -141,7 +141,7 @@ export default function LoginPage() {
                         <span className="flex items-center gap-1.5"><Cpu size={12} /> SYSTEM_READY</span>
                         <span className="flex items-center gap-1.5 text-emerald-500/50"><Shield size={12} /> SECURE_LINK_LINK_ACTIVE</span>
                     </div>
-                    <p className="opacity-50">© 2026 PolicyPulse AI Infrastructure</p>
+                    <p className="opacity-50">© 2026 Auditing Infrastructure</p>
                 </div>
             </motion.div>
         </div>

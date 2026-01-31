@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PolicyPulse | Official Compliance Auditing",
+  title: "Compliance | Official Auditing",
   description: "High-Trust Regulatory Verification and Audit Logs for DPDP Act 2023",
 };
 

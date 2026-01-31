@@ -12,7 +12,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Shield className="text-brand-primary w-8 h-8" />
-            <span className="text-2xl font-heading tracking-tight text-white">PolicyPulse</span>
+            <span className="text-2xl font-heading tracking-tight text-white">Compliance</span>
           </div>
           <div className="hidden md:flex items-center gap-10 text-[13px] font-medium tracking-wide text-slate-400">
             <Link href="#solutions" className="hover:text-brand-primary transition-colors">Solutions</Link>
@@ -35,7 +35,7 @@ export default function LandingPage() {
             className="max-w-4xl mx-auto"
           >
             <h1 className="text-6xl md:text-8xl font-heading mb-8 leading-[1.05] text-white">
-              Legally Defensible <br />
+              Legal <br />
               <span className="italic text-brand-primary">Audit Intelligence</span>
             </h1>
 
@@ -109,7 +109,7 @@ export default function LandingPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <Shield className="text-brand-primary w-8 h-8" />
-                <span className="text-2xl font-heading tracking-tight text-white">PolicyPulse</span>
+                <span className="text-2xl font-heading tracking-tight text-white">Compliance</span>
               </div>
               <p className="text-slate-500 text-sm max-w-sm leading-relaxed">
                 Autonomous regulatory intelligence engineered for high-stakes compliance environments.
@@ -134,7 +134,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-20 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6 text-xs text-slate-600 font-medium tracking-wide">
-            <span>© 2026 PolicyPulse AI. Official Auditing Infrastructure.</span>
+            <span>© 2026 Auditing Infrastructure.</span>
           </div>
         </div>
       </footer>
