@@ -15,8 +15,6 @@ import {
 } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 
-const API_BASE = 'http://localhost:8000/api/v1'; // Still needed for PDF Worker if not proxying? No, we fetch blob.
-
 export default function ReportView() {
     const { id } = useParams();
     const router = useRouter();

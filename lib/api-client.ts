@@ -2,6 +2,12 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://13.48.30.236/api/v1';
 
+console.log("Auth Protocol Sync:", {
+    node: "AU_9921",
+    api_endpoint: API_BASE_URL,
+    env_source: process.env.NEXT_PUBLIC_API_URL ? "ENV_VAR" : "FALLBACK_DEFAULT"
+});
+
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
     headers: {
